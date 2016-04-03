@@ -101,7 +101,7 @@ class APLMoveMeView: UIView {
     UIView.beginAnimations(nil, context: UnsafeMutablePointer(unsafeAddressOf(self.touchPointValue!)))
     UIView.setAnimationDuration(GROW_ANIMATION_DURATION_SECONDS)
     UIView.setAnimationDelegate(self)
-    UIView.setAnimationDidStopSelector("growAnimationDidStop:finished:context:")
+    UIView.setAnimationDidStopSelector(#selector(APLMoveMeView.growAnimationDidStop(_:finished:context:)))
     let transform = CGAffineTransformMakeScale(GROW_FACTOR, GROW_FACTOR)
     self.placardView.transform = transform
     UIView.commitAnimations()
