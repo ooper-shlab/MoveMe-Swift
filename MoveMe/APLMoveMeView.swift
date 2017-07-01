@@ -19,7 +19,7 @@ let GROW_FACTOR: CGFloat = 1.2
 let SHRINK_FACTOR: CGFloat = 1.1
 
 @objc(APLMoveMeView)
-class APLMoveMeView: UIView {
+class APLMoveMeView: UIView, CAAnimationDelegate {
     
     
     
@@ -27,55 +27,46 @@ class APLMoveMeView: UIView {
     private var touchPointValue: NSValue?
     
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         // We only support single touches, so anyObject retrieves just that touch from touches.
-        guard let touch = touches.first
-            
-            // Only move the placard view if the touch was in the placard view.
-            where touch.view == self.placardView else {
+        guard let touch = touches.first, touch.view == self.placardView else {
                 return
         }
         
         // Animate the first touch.
-        let touchPoint = touch.locationInView(self)
+        let touchPoint = touch.location(in: self)
         self.animateFirstTouchAtPoint(touchPoint)
         
     }
     
     
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        guard let touch = touches.first
-            
-            // If the touch was in the placardView, move the placardView to its location.
-            where touch.view == self.placardView else {return}
-        let location = touch.locationInView(self)
+        guard let touch = touches.first, touch.view == self.placardView else {return}
+        let location = touch.location(in: self)
         self.placardView.center = location
     }
     
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        guard let touch = touches.first
-            
-            // If the touch was in the placardView, bounce it back to the center.
-            where touch.view == self.placardView else {return}
+        guard let touch = touches.first, touch.view == self.placardView else {return}
         /*
         Disable user interaction so subsequent touches don't interfere with animation until the placard has returned to the center. Interaction is reenabled in animationDidStop:finished:.
         */
-        self.userInteractionEnabled = false
+        self.isUserInteractionEnabled = false
         self.animatePlacardViewToCenter()
     }
     
     
-    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         /*
         To impose as little impact on the device as possible, simply set the placard view's center and transformation to the original values.
         */
         self.placardView.center = self.center
-        self.placardView.transform = CGAffineTransformIdentity
+        self.placardView.transform = CGAffineTransform.identity
     }
     
     
@@ -87,41 +78,41 @@ class APLMoveMeView: UIView {
     #if true
     
     /**
-    "Pulse" the placard view by scaling up then down, then move the placard to under the finger.
-    */
-    private func animateFirstTouchAtPoint(touchPoint: CGPoint) {
-    /*
-    This illustrates using UIView's built-in animation.  We want, though, to animate the same property (transform) twice -- first to scale up, then to shrink.  You can't animate the same property more than once using the built-in animation -- the last one wins.  So we'll set a delegate action to be invoked after the first animation has finished.  It will complete the sequence.
-    
-    The touch point is passed in an NSValue object as the context to beginAnimations:. To make sure the object survives until the delegate method, pass the reference as retained.
-    */
-    
-    let GROW_ANIMATION_DURATION_SECONDS = 0.15
-    touchPointValue = NSValue(CGPoint: touchPoint)
-    UIView.beginAnimations(nil, context: UnsafeMutablePointer(unsafeAddressOf(self.touchPointValue!)))
-    UIView.setAnimationDuration(GROW_ANIMATION_DURATION_SECONDS)
-    UIView.setAnimationDelegate(self)
-    UIView.setAnimationDidStopSelector(#selector(APLMoveMeView.growAnimationDidStop(_:finished:context:)))
-    let transform = CGAffineTransformMakeScale(GROW_FACTOR, GROW_FACTOR)
-    self.placardView.transform = transform
-    UIView.commitAnimations()
+     "Pulse" the placard view by scaling up then down, then move the placard to under the finger.
+     */
+    private func animateFirstTouchAtPoint(_ touchPoint: CGPoint) {
+        /*
+         This illustrates using UIView's built-in animation.  We want, though, to animate the same property (transform) twice -- first to scale up, then to shrink.  You can't animate the same property more than once using the built-in animation -- the last one wins.  So we'll set a delegate action to be invoked after the first animation has finished.  It will complete the sequence.
+         
+         The touch point is passed in an NSValue object as the context to beginAnimations:. To make sure the object survives until the delegate method, pass the reference as retained.
+         */
+        
+        let GROW_ANIMATION_DURATION_SECONDS = 0.15
+        touchPointValue = NSValue(cgPoint: touchPoint)
+        UIView.beginAnimations(nil, context: Unmanaged.passUnretained(self.touchPointValue!).toOpaque())
+        UIView.setAnimationDuration(GROW_ANIMATION_DURATION_SECONDS)
+        UIView.setAnimationDelegate(self)
+        UIView.setAnimationDidStop(#selector(APLMoveMeView.growAnimationDidStop(_:finished:context:)))
+        let transform = CGAffineTransform(scaleX: GROW_FACTOR, y: GROW_FACTOR)
+        self.placardView.transform = transform
+        UIView.commitAnimations()
     }
     
     
-    func growAnimationDidStop(animationID: String, finished: NSNumber, context: UnsafePointer<Void>) {
-    
-    let MOVE_ANIMATION_DURATION_SECONDS = 0.15
-    
-    UIView.beginAnimations(nil, context: nil)
-    UIView.setAnimationDuration(MOVE_ANIMATION_DURATION_SECONDS)
-    self.placardView.transform = CGAffineTransformMakeScale(SHRINK_FACTOR, SHRINK_FACTOR)
-    /*
-    Move the placardView to under the touch.
-    We passed the location wrapped in an NSValue as the context. Get the point from the value, and transfer ownership to ARC to balance the bridge retain in touchesBegan:withEvent:.
-    */
-    let touchPointValue = unsafeBitCast(context, NSValue.self) //###TODO: no memory leak?
-    self.placardView.center = touchPointValue.CGPointValue()
-    UIView.commitAnimations()
+    func growAnimationDidStop(_ animationID: String, finished: NSNumber, context: UnsafeRawPointer) {
+        
+        let MOVE_ANIMATION_DURATION_SECONDS = 0.15
+        
+        UIView.beginAnimations(nil, context: nil)
+        UIView.setAnimationDuration(MOVE_ANIMATION_DURATION_SECONDS)
+        self.placardView.transform = CGAffineTransform(scaleX: SHRINK_FACTOR, y: SHRINK_FACTOR)
+        /*
+         Move the placardView to under the touch.
+         We passed the location wrapped in an NSValue as the context. Get the point from the value, and transfer ownership to ARC to balance the bridge retain in touchesBegan:withEvent:.
+         */
+        let touchPointValue = Unmanaged<NSValue>.fromOpaque(context).takeUnretainedValue()
+        self.placardView.center = touchPointValue.cgPointValue
+        UIView.commitAnimations()
     }
     
     #else
@@ -203,11 +194,11 @@ class APLMoveMeView: UIView {
     private func animatePlacardViewToCenter() {
         
         let placardView = self.placardView
-        let welcomeLayer = placardView.layer
+        let welcomeLayer = placardView?.layer
         
         // Create a keyframe animation to follow a path back to the center.
         let bounceAnimation = CAKeyframeAnimation(keyPath: "position")
-        bounceAnimation.removedOnCompletion = false
+        bounceAnimation.isRemovedOnCompletion = false
         
         var animationDuration: CGFloat = 1.5
         
@@ -218,22 +209,22 @@ class APLMoveMeView: UIView {
         let centerPoint = self.center
         let midX = centerPoint.x
         let midY = centerPoint.y
-        let originalOffsetX = placardView.center.x - midX
-        let originalOffsetY = placardView.center.y - midY
+        let originalOffsetX = (placardView?.center.x)! - midX
+        let originalOffsetY = (placardView?.center.y)! - midY
         var offsetDivider: CGFloat = 4.0
         
         var stopBouncing = false
         
         // Start the path at the placard's current location.
-        bouncePath.moveToPoint(CGPointMake(placardView.center.x, placardView.center.y))
-        bouncePath.addLineToPoint(CGPointMake(midX, midY))
+        bouncePath.move(to: CGPoint(x: (placardView?.center.x)!, y: (placardView?.center.y)!))
+        bouncePath.addLine(to: CGPoint(x: midX, y: midY))
         
         // Add to the bounce path in decreasing excursions from the center.
         while !stopBouncing {
             
-            let excursion = CGPointMake(midX + originalOffsetX/offsetDivider, midY + originalOffsetY/offsetDivider)
-            bouncePath.addLineToPoint(excursion)
-            bouncePath.addLineToPoint(centerPoint)
+            let excursion = CGPoint(x: midX + originalOffsetX/offsetDivider, y: midY + originalOffsetY/offsetDivider)
+            bouncePath.addLine(to: excursion)
+            bouncePath.addLine(to: centerPoint)
             
             offsetDivider += 4
             animationDuration += 1/offsetDivider
@@ -242,14 +233,14 @@ class APLMoveMeView: UIView {
             }
         }
         
-        bounceAnimation.path = bouncePath.CGPath
+        bounceAnimation.path = bouncePath.cgPath
         bounceAnimation.duration = CFTimeInterval(animationDuration)
         
         // Create a basic animation to restore the size of the placard.
         let transformAnimation = CABasicAnimation(keyPath: "transform")
-        transformAnimation.removedOnCompletion = true
+        transformAnimation.isRemovedOnCompletion = true
         transformAnimation.duration = CFTimeInterval(animationDuration)
-        transformAnimation.toValue = NSValue(CATransform3D: CATransform3DIdentity)
+        transformAnimation.toValue = NSValue(caTransform3D: CATransform3DIdentity)
         
         
         // Create an animation group to combine the keyframe and basic animations.
@@ -264,21 +255,21 @@ class APLMoveMeView: UIView {
         
         
         // Add the animation group to the layer.
-        welcomeLayer.addAnimation(theGroup, forKey: "animatePlacardViewToCenter")
+        welcomeLayer?.add(theGroup, forKey: "animatePlacardViewToCenter")
         
         // Set the placard view's center and transformation to the original values in preparation for the end of the animation.
-        placardView.center = centerPoint
-        placardView.transform = CGAffineTransformIdentity
+        placardView?.center = centerPoint
+        placardView?.transform = CGAffineTransform.identity
     }
     
     
     /**
     Animation delegate method called when the animation's finished: restore the transform and reenable user interaction.
     */
-    override func animationDidStop(theAnimation: CAAnimation, finished flag: Bool) {
+    func animationDidStop(_ theAnimation: CAAnimation, finished flag: Bool) {
         
-        self.placardView.transform = CGAffineTransformIdentity
-        self.userInteractionEnabled = true
+        self.placardView.transform = CGAffineTransform.identity
+        self.isUserInteractionEnabled = true
     }
     
     

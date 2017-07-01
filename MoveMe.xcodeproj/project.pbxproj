@@ -15,9 +15,9 @@
 		28A7B3D016E139F800D0B565 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28A7B3CF16E139F800D0B565 /* Foundation.framework */; };
 		28A7B3D216E139F800D0B565 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28A7B3D116E139F800D0B565 /* CoreGraphics.framework */; };
 		28A7B3E716E139F800D0B565 /* MainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28A7B3E516E139F800D0B565 /* MainStoryboard.storyboard */; };
-		D747247C1BB7944800BB8816 /* APLMoveMeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D747247B1BB7944800BB8816 /* APLMoveMeView.swift */; settings = {ASSET_TAGS = (); }; };
-		D747247E1BB7BE1700BB8816 /* APLAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D747247D1BB7BE1700BB8816 /* APLAppDelegate.swift */; settings = {ASSET_TAGS = (); }; };
-		D74724841BB7BFC400BB8816 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D74724831BB7BFC400BB8816 /* Default-568h@2x.png */; settings = {ASSET_TAGS = (); }; };
+		D747247C1BB7944800BB8816 /* APLMoveMeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D747247B1BB7944800BB8816 /* APLMoveMeView.swift */; };
+		D747247E1BB7BE1700BB8816 /* APLAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D747247D1BB7BE1700BB8816 /* APLAppDelegate.swift */; };
+		D74724841BB7BFC400BB8816 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D74724831BB7BFC400BB8816 /* Default-568h@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -138,6 +138,11 @@
 				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Apple Inc.";
+				TargetAttributes = {
+					28A7B3C916E139F800D0B565 = {
+						LastSwiftMigration = 0830;
+					};
+				};
 			};
 			buildConfigurationList = 28A7B3C516E139F800D0B565 /* Build configuration list for PBXProject "MoveMe" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -299,6 +304,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -317,6 +323,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
