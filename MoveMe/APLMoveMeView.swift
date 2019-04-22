@@ -36,7 +36,7 @@ class APLMoveMeView: UIView, CAAnimationDelegate {
         
         // Animate the first touch.
         let touchPoint = touch.location(in: self)
-        self.animateFirstTouchAtPoint(touchPoint)
+        self.animateFirstTouch(at: touchPoint)
         
     }
     
@@ -80,7 +80,7 @@ class APLMoveMeView: UIView, CAAnimationDelegate {
     /**
      "Pulse" the placard view by scaling up then down, then move the placard to under the finger.
      */
-    private func animateFirstTouchAtPoint(_ touchPoint: CGPoint) {
+    private func animateFirstTouch(at touchPoint: CGPoint) {
         /*
          This illustrates using UIView's built-in animation.  We want, though, to animate the same property (transform) twice -- first to scale up, then to shrink.  You can't animate the same property more than once using the built-in animation -- the last one wins.  So we'll set a delegate action to be invoked after the first animation has finished.  It will complete the sequence.
          
@@ -92,14 +92,14 @@ class APLMoveMeView: UIView, CAAnimationDelegate {
         UIView.beginAnimations(nil, context: Unmanaged.passUnretained(self.touchPointValue!).toOpaque())
         UIView.setAnimationDuration(GROW_ANIMATION_DURATION_SECONDS)
         UIView.setAnimationDelegate(self)
-        UIView.setAnimationDidStop(#selector(APLMoveMeView.growAnimationDidStop(_:finished:context:)))
+        UIView.setAnimationDidStop(#selector(self.growAnimationDidStop(_:finished:context:)))
         let transform = CGAffineTransform(scaleX: GROW_FACTOR, y: GROW_FACTOR)
         self.placardView.transform = transform
         UIView.commitAnimations()
     }
     
     
-    func growAnimationDidStop(_ animationID: String, finished: NSNumber, context: UnsafeRawPointer) {
+    @objc func growAnimationDidStop(_ animationID: String, finished: NSNumber, context: UnsafeRawPointer) {
         
         let MOVE_ANIMATION_DURATION_SECONDS = 0.15
         
@@ -128,24 +128,24 @@ class APLMoveMeView: UIView, CAAnimationDelegate {
     Create two separate animations. The first animation is for the grow and partial shrink. The grow animation is performed in a block. The method uses a completion block that itself includes an animation block to perform the shrink. The second animation lasts for the total duration of the grow and shrink animations and contains a block responsible for performing the move.
     */
     
-    private func animateFirstTouchAtPoint(touchPoint: CGPoint) {
+    private func animateFirstTouch(at touchPoint: CGPoint) {
         
         let GROW_ANIMATION_DURATION_SECONDS = 0.15
         let SHRINK_ANIMATION_DURATION_SECONDS = 0.15
         
-        UIView.animateWithDuration(GROW_ANIMATION_DURATION_SECONDS, animations: {
-            let transform = CGAffineTransformMakeScale(GROW_FACTOR, GROW_FACTOR)
+        UIView.animate(withDuration: GROW_ANIMATION_DURATION_SECONDS, animations: {
+            let transform = CGAffineTransform(scaleX: GROW_FACTOR, y: GROW_FACTOR)
             self.placardView.transform = transform
             },
             completion: {finished in
                 
-                UIView.animateWithDuration(SHRINK_ANIMATION_DURATION_SECONDS) {
-                    self.placardView.transform = CGAffineTransformMakeScale(SHRINK_FACTOR, SHRINK_FACTOR)
+                UIView.animate(withDuration: SHRINK_ANIMATION_DURATION_SECONDS) {
+                    self.placardView.transform = CGAffineTransform(scaleX: SHRINK_FACTOR, y: SHRINK_FACTOR)
                 }
                 
         })
         
-        UIView.animateWithDuration(GROW_ANIMATION_DURATION_SECONDS + SHRINK_ANIMATION_DURATION_SECONDS) {
+        UIView.animate(withDuration: GROW_ANIMATION_DURATION_SECONDS + SHRINK_ANIMATION_DURATION_SECONDS) {
             self.placardView.center = touchPoint
         }
         
@@ -249,7 +249,7 @@ class APLMoveMeView: UIView, CAAnimationDelegate {
         // Set self as the delegate to allow for a callback to reenable user interaction.
         theGroup.delegate = self
         theGroup.duration = CFTimeInterval(animationDuration)
-        theGroup.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
+        theGroup.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeIn)
         
         theGroup.animations = [bounceAnimation, transformAnimation]
         
